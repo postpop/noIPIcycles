@@ -55,6 +55,7 @@ end
 
 %plot Power results
 figure(1)
+clf
 hold on
 for i= 1:5
     plot(sample_size_cell{i},power_cell{i},'LineWidth',2)
@@ -64,5 +65,5 @@ xlabel('Number of IPIs','FontSize',26)
 ylabel('Power P < 0.05','FontSize',26)
 set(gca,'FontSize',24)
 set(gca,'box','off')
-
+legend off
 
