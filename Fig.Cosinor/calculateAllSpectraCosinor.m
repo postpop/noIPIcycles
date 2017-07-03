@@ -1,10 +1,7 @@
 cc()
 addpath('../code')
 % files with pulsetimes/intervals of different datasets and annotations
-fileNames = {'Stern2014_FSSCoen2014.mat';...
-   'Stern2014_FSSStern2014.mat';...
-   'Stern2014_KyriacouManual2017.mat';...
-   'Stern2017_FSSCoen2014.mat'}
+fileNames = {'Stern2014_KyriacouManual2017.mat'}
 
 %%
 ipiCutoffLow = 15/1000;    % [ms] lower cutoff for ipis - anything shorter is likely segmentation error
@@ -14,7 +11,7 @@ HIFAC = 0.4;      % Lomb Scargle (see help lomb)
 alpha = 0.05;     % significance level for peak detection
 F = 1./(20:.1:150);
 dK = load(['../data/' 'Stern2014_KyriacouManual2017.mat']); %  manual annotation by Kyriacou et al. (2017)
-cutLabel = {'full','cut'}; % cut recordings to the part that was manually annotated manually or use full recording
+randLabel = {'original','shuffled'}; % cut recordings to the part that was manually annotated manually or use full recording
 
 for fil = 1:length(fileNames) % for each annotation - manual Kyriacou et al. 2017, automatic with parameters from Stern et al. (2014) and Coen et al. (2014)
    disp(fileNames{fil})
@@ -22,10 +19,6 @@ for fil = 1:length(fileNames) % for each annotation - manual Kyriacou et al. 201
    clear a spec peak
    for ic = 1:length(ipiCutoffHigh) % cut off IPIs at 55 or 75 ms
       for ct = 1:2  % cut recordings to the part that was manually annotated manually or use full recording
-         if ct==2 && fil>2 % do not cut the manually annotated data set or the new data set for which no reference annotation exists
-            warning('no cutting')
-            continue
-         end
          for fly = 1:size(d.ipi,2) % for each fly
             
             try
@@ -35,25 +28,13 @@ for fil = 1:length(fileNames) % for each annotation - manual Kyriacou et al. 201
                
                [t, ipi] = cleanData(t, ipi, ipiCutoffLow, ipiCutoffHigh(ic));
                
-               if ct == 2 % cut recording to include only the song manually annotated by Kyriacou
-                  idx = find(endsWith(dK.flyNames, d.flyNames{fly}), 1, 'first'); % find current fly in man$
-                  if ~isempty(idx)
-                     tStart = nanmax(0,ceil(nanmax(0, nanmin(dK.pulseTimes(:,idx)))));
-                     tEnd = floor(nanmax(dK.pulseTimes(:,idx))+1);
-                     
-                     toCut = t<tStart | t>tEnd;
-                     t(toCut) = [];
-                     ipi(toCut) = [];
-                  else
-                     t = [];
-                     ipi = [];
-                     warning('no manual annotation found - skipping')
-                     continue
-                  end
+               if ct == 2 % randomize ipi sequence
+                  ipi = ipi(randperm(length(ipi)));          
                end
                
-               %% calculate spectra
-               [thisSpec, thisPeak, thisA] = ipiSpectra(t,ipi, OFAC, HIFAC, alpha, F);
+               %% calculate spectra using cosinor
+               [thisSpec, thisPeak, thisA] = ipiSpectraCosinor(t,ipi, OFAC, HIFAC, alpha, F);
+               
                % reassemble data
                spec.F{fly} = thisSpec.F; spec.P{fly} = thisSpec.P; spec.p{fly} = thisSpec.p;
                peak.amp{fly} = thisPeak.amp; peak.loc{fly} = thisPeak.loc;
@@ -63,7 +44,7 @@ for fil = 1:length(fileNames) % for each annotation - manual Kyriacou et al. 201
                disp(ME.getReport())
             end
          end
-         saveFileName = sprintf('spectra/%s_spec_ipiCutoff%dms_%s', fileNames{fil}(1:end-4), ipiCutoffHigh(ic)*1000, cutLabel{ct});
+         saveFileName = sprintf('%s_spec_ipiCutoff%dms_%s', fileNames{fil}(1:end-4), ipiCutoffHigh(ic)*1000, randLabel{ct});
          fprintf('saving to %s.\n', saveFileName)
          save(saveFileName, 'spec', 'peak', 'a')
       end

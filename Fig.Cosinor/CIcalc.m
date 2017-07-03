@@ -93,31 +93,3 @@ else
       CI_phi_min = min(CIphi);
    end
 end
-
-%Polar Representation of Cosinor analysis
-if nargout==0
-   
-   figure('name','Rhythm Parameter Estimates with Joint Confidence Region', 'position', [245 357 643 600]);
-   plot(gamma_s,beta_s1,'linewidth', 2); hold on;
-   plot(gamma_s,beta_s2,'linewidth', 2)
-   line([0 gamma], [0 beta], 'color','k','linewidth', 2)
-   line([gamma -2*Amp*sin(phi)], [beta 2*Amp*cos(phi)], 'color','k','linewidth', 2, 'linestyle',':')
-   xlabel('\gamma')
-   ylabel('\beta')
-   ylim([-Amp*2.5 Amp*2.5])
-   xlim([-Amp*2.5 Amp*2.5])
-   line([0 0], [-Amp*2 Amp*2], 'color','k','linestyle', '--')
-   line([-Amp*2 Amp*2], [0 0], 'color','k','linestyle', '--')
-   
-   %Clock and Labels
-   theta_clock = (0:pi/60:2*pi)';
-   clock = ([Amp*2*cos(theta_clock) Amp*2*sin(theta_clock)]);
-   plot(clock(:,1),clock(:,2), 'k', 'linewidth', 1.5)
-   plot(clock(:,1)*1.2,clock(:,2)*1.2, 'k', 'linewidth', 1.5)
-   theta_clock = (0:pi/4:2*pi-pi/4)';
-   clock_labels_xy = ([Amp*2.2*cos(theta_clock) Amp*2.2*sin(theta_clock)]);
-   clock_labels = {'6:00'; '3:00'; '0:00'; '21:00'; '18:00'; '15:00'; '12:00'; '9:00'};
-   for jj=1:length(clock_labels)
-      text(clock_labels_xy(jj,1), clock_labels_xy(jj,2), clock_labels(jj), 'horizontalalignment', 'center');
-   end
-end
