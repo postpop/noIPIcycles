@@ -14,7 +14,7 @@ xlabel('Time (min)','FontSize',26)
 plot(t/60/1e4,yy/10,'Color', [0.617 0.14 0.56],'LineWidth',6)
 hold off
 
-%Fig 1C
+%% Fig 1C
 clf
 d = d(t<10*60*1e4);%first ten minutes of data
 t = t(t<10*60*1e4);

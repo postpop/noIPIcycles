@@ -33,7 +33,7 @@ for sample = 1:numel(IPI_results)
 end
 
 
-%plot Power results
+% plot Power results
 figure(1)
 hold on
 plot(amplitude/10,nanmean(power),'-o','LineWidth',2)

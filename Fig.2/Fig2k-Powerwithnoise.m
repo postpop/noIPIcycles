@@ -89,7 +89,7 @@ set(gca,'FontSize',20)
 colorbar
 legend off
 
-%Plot example KH cycles with range of SNR 
+%% Plot example KH cycles with range of SNR 
 figure(2)
 noise = range_noise;
 sample = 1;

@@ -16,7 +16,7 @@ F = 1./(20:.1:150);
 dK = load(['../data/' 'Stern2014_KyriacouManual2017.mat']); %  manual annotation by Kyriacou et al. (2017)
 cutLabel = {'full','cut'}; % cut recordings to the part that was manually annotated manually or use full recording
 
-for fil = 1:length(fileNames) % for each annotation - manual Kyriacou et al. 2017, automatic with parameters from Stern et al. (2014) and Coen et al. (2014)
+for fil = length(fileNames)-2:-1:1 % for each annotation - manual Kyriacou et al. 2017, automatic with parameters from Stern et al. (2014) and Coen et al. (2014)
    disp(fileNames{fil})
    d = load(['../data/' fileNames{fil}]); % load results from all flies for the current segmentation
    clear a spec peak
@@ -37,7 +37,7 @@ for fil = 1:length(fileNames) % for each annotation - manual Kyriacou et al. 201
                
                if ct == 2 % cut recording to include only the song manually annotated by Kyriacou
                   idx = find(endsWith(dK.flyNames, d.flyNames{fly}), 1, 'first'); % find current fly in man$
-                  if ~isempty(idx)
+                  if ~isempty(idx) 
                      tStart = nanmax(0,ceil(nanmax(0, nanmin(dK.pulseTimes(:,idx)))));
                      tEnd = floor(nanmax(dK.pulseTimes(:,idx))+1);
                      
@@ -63,7 +63,7 @@ for fil = 1:length(fileNames) % for each annotation - manual Kyriacou et al. 201
                disp(ME.getReport())
             end
          end
-         saveFileName = sprintf('spectra/%s_spec_ipiCutoff%dms_%s', fileNames{fil}(1:end-4), ipiCutoffHigh(ic)*1000, cutLabel{ct});
+         saveFileName = sprintf('%s_spec_ipiCutoff%dms_%s', fileNames{fil}(1:end-4), ipiCutoffHigh(ic)*1000, cutLabel{ct});
          fprintf('saving to %s.\n', saveFileName)
          save(saveFileName, 'spec', 'peak', 'a')
       end
