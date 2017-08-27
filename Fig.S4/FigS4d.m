@@ -1,14 +1,13 @@
 %%
-% Fig S4a
-% Power analysis after randomly droping 10sec bins
-%%
+% Fig S4d
+% Power analysis
+% most vigorous 400 sec starting within first 5 min of song
+% calculate % of times get frequency between 50-60 seconds
+% (0.0167 - 0.02 Hz)
 
 clear all
 load('CantonS_KHIPIs_LLR=0.mat')
 
-%Power analysis
-%repeat and calculate % of times get frequency between 50-60 seconds
-%(0.0167 - 0.02 Hz)
 good_samples = [4 11 14 15 16 24];
 n=0;
 power_cell = cell(numel(good_samples),1);
@@ -16,6 +15,21 @@ sample_size_cell = power_cell;
 for sample = good_samples
     d = IPI_results(sample).IPI.d;
     t = IPI_results(sample).IPI.t;
+    
+    %take most vigorous 400 sec starting in first 5 min
+    t_start = zeros(5,1);
+    t_end = t_start;
+    numIPIs = t_start;
+    for j = 0:1:5 %test first five minutes
+        k = j+1;
+        t_start(k) = j*(1e4*60);
+        t_end(k) = t_start(k) + 400*1e4; %sample 400 second sections
+        numIPIs(k) = numel(d(t>t_start(k) & t<t_end(k)));
+    end
+    
+    d = d(t>t_start(numIPIs == max(numIPIs)) & t<t_end(numIPIs == max(numIPIs)));%take first 5 min
+    t = t(t>t_start(numIPIs == max(numIPIs)) & t<t_end(numIPIs == max(numIPIs)));
+    
     time = 1:t(end);
     fs = 1e4;
     f = 1/(55*fs);%freq = 1/period
@@ -27,7 +41,7 @@ for sample = good_samples
     reps = 100;
     power = [];
     sample_size = [];
-    prop_data = 0.03:.01:.20;
+    prop_data = 0.1:.05:1;%need more of data, cause dataset so low
     for j = prop_data
         sign = zeros(reps,1);
         N = NaN(reps,1);
@@ -45,7 +59,7 @@ for sample = good_samples
                     d_sine_thresholded = cat(2,d_sine_thresholded,d_sine_bin');
                 end
             end
-            if ~isempty(t_thresholded)%lomb crashes if array empty
+            if numel(t_thresholded)>10%lomb crashes if array too small
                 [P,f,alpha] = lomb(d_sine_thresholded,t_thresholded./1e4);
                 peak = min(alpha(f>1/60 & f<1/50));
                 if peak < 0.05
@@ -73,5 +87,3 @@ xlabel('Number of IPIs','FontSize',26)
 ylabel('Power P < 0.05','FontSize',26)
 set(gca,'FontSize',24)
 set(gca,'box','off')
-
-
