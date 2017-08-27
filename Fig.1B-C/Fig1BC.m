@@ -8,9 +8,9 @@ ylim([10 70])
 xlim([0 10])
 hold on
 set(gca,'box','off')
-ylabel('Inter-Pulse Interval (ms)','FontSize',26)
-set(gca,'FontSize',24)
-xlabel('Time (min)','FontSize',26)
+ylabel('Inter-Pulse Interval (ms)','FontSize',36)
+set(gca,'FontSize',36)
+xlabel('Time (min)','FontSize',36)
 plot(t/60/1e4,yy/10,'Color', [0.617 0.14 0.56],'LineWidth',6)
 hold off
 
@@ -26,10 +26,10 @@ xlim([20 150])
 styles = {':','-.','--'};
 for i = 1:numel(styles)
     line([20,130],[z(i),z(i)],'Color','k','LineStyle',styles{i});
-    text(131,z(i),strcat('\alpha = ',num2str(a(i))),'fontsize',16); 
+    text(131,z(i),strcat('\alpha = ',num2str(a(i))),'fontsize',36); 
 end
-xlabel('Period (sec)','FontSize',26)
-ylabel('Power','FontSize',26)
-set(gca,'FontSize',24)
+xlabel('Period (sec)','FontSize',36)
+ylabel('Power','FontSize',36)
+set(gca,'FontSize',36)
 set(gca,'box','off')
 hold off

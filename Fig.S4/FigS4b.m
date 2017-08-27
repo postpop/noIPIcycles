@@ -1,89 +1,46 @@
 %%
-% FigS3b
-% Power analysis
-% most vigorous 400 sec starting within first 5 min of song
-% calculate % of times get frequency between 50-60 seconds
-% (0.0167 - 0.02 Hz)
-
+% Fig S4b
+% effect of reducing amplitude from 2 ms to 0 on power of detecting
+% rhythm
 clear all
 load('CantonS_KHIPIs_LLR=0.mat')
 
-good_samples = [4 14 15 16 24];
-n=0;
-power_cell = cell(numel(good_samples),1);
-sample_size_cell = power_cell;
-for sample = good_samples
+fs = 1e4;
+power = nan(numel(IPI_results),numel(0:1:20));
+lomb_results = cell(numel(IPI_results),numel(0:1:20));
+for sample = 1:numel(IPI_results)
     d = IPI_results(sample).IPI.d;
-    t = IPI_results(sample).IPI.t;
-    
-    %take most vigorous 400 sec starting in first 5 min
-    t_start = zeros(5,1);
-    t_end = t_start;
-    numIPIs = t_start;
-    for j = 0:1:5 %test first five minutes
-        k = j+1;
-        t_start(k) = j*(1e4*60);
-        t_end(k) = t_start(k) + 400*1e4; %sample 400 second sections
-        numIPIs(k) = numel(d(t>t_start(k) & t<t_end(k)));
-    end
-    
-    d = d(t>t_start(numIPIs == max(numIPIs)) & t<t_end(numIPIs == max(numIPIs)));%take first 5 min
-    t = t(t>t_start(numIPIs == max(numIPIs)) & t<t_end(numIPIs == max(numIPIs)));
-    
-    time = 1:t(end);
-    fs = 1e4;
-    f = 1/(55*fs);%freq = 1/period
-    A = 20; %amplitude 2msec
-    x = A *sin(2*pi*f*t);
-    d_sine = x(:) + d(:); %raw data with sine imposed on top
-
-    num_bins = floor(t(end)/1e5); %num of 10sec bins
-    reps = 100;
-    power = [];
-    sample_size = [];
-    prop_data = 0.1:.05:1;%need more of data, cause dataset so low
-    for j = prop_data
-        sign = zeros(reps,1);
-        N = NaN(reps,1);
-        for m = 1:reps
-            rnd_bins = rand(num_bins,1);
-            threshold = j;
-            t_thresholded = [];
-            d_sine_thresholded = [];
-            for i = 1:numel(rnd_bins)
-                if rnd_bins(i) < threshold
-                    start = i*1e5 - 1e5;
-                    t_bin = t(t>=start & t< i*1e5);
-                    t_thresholded = cat(2,t_thresholded,t_bin);
-                    d_sine_bin = d_sine(t>=start & t< i*1e5);
-                    d_sine_thresholded = cat(2,d_sine_thresholded,d_sine_bin');
-                end
+    if numel(d) >=1000
+        t = IPI_results(sample).IPI.t;
+        freq = 1/(55*fs);%freq = 1/period
+        amplitude = 0:1:20;
+        sign = nan(numel(amplitude),1);
+        
+        for j = 1:numel(amplitude)
+            x = amplitude(j) * sin(2*pi*freq*t);
+            d_sine = x(:) + d(:); %raw data with sine imposed on top
+            [P,f,alpha] = lomb(d_sine,t./1e4);
+            peak = min(alpha(f>1/60 & f<1/50));
+            if peak < 0.05
+                sign(j) = 1;
+            else
+                sign(j) = 0;
             end
-            if ~isempty(t_thresholded)%lomb crashes if array empty
-                [P,f,alpha] = lomb(d_sine_thresholded,t_thresholded./1e4);
-                peak = min(alpha(f>1/60 & f<1/50));
-                if peak < 0.05
-                    sign(m) = 1;
-                end
-                N(m) = numel(t_thresholded);
-            end
+            lomb_results{sample,j} = [P,f,alpha];
         end
-        power = cat(1,power,sum(sign)/reps);
-        sample_size = cat(1,sample_size,nanmean(N));
     end
-    n=n+1;
-    power_cell{n} = power;
-    sample_size_cell{n} = sample_size;
+    power(sample,:) = sign;
 end
+
 
 %plot Power results
-figure(2)
+figure(1)
 hold on
-for i= 1:5
-    plot(sample_size_cell{i},power_cell{i},'LineWidth',2)
-end
+plot(amplitude/10,nanmean(power),'-o','LineWidth',2)
 ylim([0 1.05])
-xlabel('Number of IPIs','FontSize',26)
+xlim([amplitude(1)/10 amplitude(end)/10])
+xlabel('Periodicity Amplitude (msec)','FontSize',26)
 ylabel('Power P < 0.05','FontSize',26)
 set(gca,'FontSize',24)
 set(gca,'box','off')
+hold off
