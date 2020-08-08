@@ -1,7 +1,7 @@
 cc()
 randLabel = {'original', 'shuffled'};
 for ii = 1:length(randLabel)
-   d{ii} = load(['Stern2014_KyriacouManual2017_spec_ipiCutoff75ms_' randLabel{ii}]);
+   d{ii} = load(['Stern2014_KyriacouManual2017_spec_ipiCutoff75ms_' randLabel{ii} '_lomb']);
 end
 %%
 cols = lines(2);
@@ -11,7 +11,7 @@ for ii = 1:length(d)
    plot(1./d{ii}.a.F, log2(1./d{ii}.a.spec), 'Color', [.6 .6 .6])
    hold on
    plot(1./d{ii}.a.F, log2(mean(1./d{ii}.a.spec,2)), 'Color', cols(ii,:), 'LineWidth', 1.5)
-   set(gca, 'XLim', [20 150], 'YLim', [10 18])
+   set(gca, 'XLim', [20 150], 'YLim', [-5 15])
    title(randLabel{ii})
 end
 ylabel('log_2 cosinor amplitude')
